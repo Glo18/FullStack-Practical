@@ -1,0 +1,90 @@
+<h2>Add User</h2>
+<form id="userForm">
+    <input type="text" id="name" placeholder="Name" required />
+    <input type="email" id="email" placeholder="Email" required />
+    <input type="text" id="phone" placeholder="Phone" required />
+    <input type="number" id="age" placeholder="Age" required />
+    <button type="submit">Submit</button>
+  </form>
+  <p id="response" style="color: red;"></p>
+
+  <h2>Add Product</h2>
+<form id="productForm">
+  <input type="text" id="productName" placeholder="Product Name" required />
+  <input type="number" id="productPrice" placeholder="Product Price" required />
+  <button type="submit">Add Product</button>
+</form>
+<p id="productResponse" style="color: red;"></p>
+  
+  <script>
+  document.getElementById('userForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const data = {
+      name: document.getElementById('name').value,
+      email: document.getElementById('email').value,
+      phone: document.getElementById('phone').value,
+      age: parseInt(document.getElementById('age').value)
+    };
+
+    const email = data.email;
+    const emailPattern = /^[^ ]+@[^ ]+\.[a-z]{2,3}$/;
+    if (!emailPattern.test(email)) {
+        document.getElementById('response').innerText = 'Invalid email format';
+        return;
+    }
+
+    try {
+    const res = await fetch('/api/users', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+
+    // ✅ Show server errors clearly
+    if (!res.ok) {
+        document.getElementById('response').innerText = 'Server error, please try again.';
+        return;
+      }
+
+      // ✅ Show success response
+      const message = await res.text();
+      document.getElementById('response').style.color = 'green';
+      document.getElementById('response').innerText = message;
+    } catch (error) {
+      // ✅ Handle fetch/network errors
+      document.getElementById('response').innerText = await res.text();
+    }
+  });
+
+  // Handle Product Form
+  document.getElementById('productForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const productData = {
+      name: document.getElementById('productName').value,
+      price: parseFloat(document.getElementById('productPrice').value)
+    };
+
+    try {
+      const res = await fetch('/api/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(productData),
+      });
+
+      if (!res.ok) {
+        document.getElementById('productResponse').innerText = 'Server error while saving product.';
+        document.getElementById('productResponse').style.color = 'red';
+        return;
+      }
+
+      const msg = await res.text();
+      document.getElementById('productResponse').innerText = msg;
+      document.getElementById('productResponse').style.color = 'green';
+    } catch (error) {
+      document.getElementById('productResponse').innerText = 'Could not connect to the server.';
+      document.getElementById('productResponse').style.color = 'red';
+    }
+  });
+  </script>
+  
